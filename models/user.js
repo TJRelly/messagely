@@ -27,7 +27,7 @@ class User {
         const result = await db.query(
             `INSERT INTO users (username, password, first_name, last_name, phone)
              VALUES ($1, $2, $3, $4, $5)
-             RETURNING username`,
+             RETURNING username, password`,
             [username, hashedPassword, first_name, last_name, phone]
         );
 
@@ -108,7 +108,32 @@ class User {
      *   {username, first_name, last_name, phone}
      */
 
-    static async messagesFrom(username) {}
+    static async messagesFrom(username) {
+        const result = await db.query(
+            `SELECT m.id, u.username, u.first_name, u.last_name, u.phone, m.body, m.sent_at, m.read_at
+                FROM messages AS m
+                JOIN users AS u 
+                ON m.to_username = u.username
+                WHERE m.from_username = $1`,
+            [username]
+        );
+
+        let messages = result.rows.map((r) => {
+            return {
+                id: r.id,
+                to_user: {
+                    username: r.username,
+                    first_name: r.first_name,
+                    last_name: r.last_name,
+                    phone: r.phone,
+                },
+                body: r.body,
+                sent_at: r.sent_at,
+                read_at: r.read_at,
+            };
+        });
+        return messages;
+    }
 
     /** Return messages to this user.
      *
@@ -118,7 +143,32 @@ class User {
      *   {username, first_name, last_name, phone}
      */
 
-    static async messagesTo(username) {}
+    static async messagesTo(username) {
+        const result = await db.query(
+            `SELECT m.id, u.username, u.first_name, u.last_name, u.phone, m.body, m.sent_at, m.read_at
+                FROM messages AS m
+                JOIN users AS u 
+                ON m.from_username = u.username
+                WHERE m.to_username = $1`,
+            [username]
+        );
+
+        let messages = result.rows.map((r) => {
+            return {
+                id: r.id,
+                from_user: {
+                    username: r.username,
+                    first_name: r.first_name,
+                    last_name: r.last_name,
+                    phone: r.phone,
+                },
+                body: r.body,
+                sent_at: r.sent_at,
+                read_at: r.read_at,
+            };
+        });
+        return messages;
+    }
 }
 
 module.exports = User;
