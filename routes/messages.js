@@ -1,7 +1,7 @@
 const express = require("express");
 const router = new express.Router();
 const Message = require("../models/message");
-const { ensureCorrectUser, ensureLoggedIn } = require("../middleware/auth");
+const { ensureLoggedIn } = require("../middleware/auth");
 const ExpressError = require("../expressError");
 /** GET /:id - get detail of message.
  *
